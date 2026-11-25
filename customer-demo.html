@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>有機肥料進銷存系統 - 客戶管理</title>
+<style>
+:root{
+  --green:#2f7d5b; --green-d:#1f5c42; --green-l:#e3f1ea; --head:#9fc5b0;
+  --bg:#f4f6f5; --card:#fff; --line:#e2e7e4; --tx:#1d2b25; --mut:#6b7a73;
+  --warn:#d98a00; --bad:#c8402f; --blue:#2a6fb0;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Microsoft JhengHei","PingFang TC",system-ui,sans-serif;background:var(--bg);color:var(--tx);font-size:14px}
+.app{display:grid;grid-template-columns:210px 1fr;min-height:100vh}
+aside{background:#1c3a2e;color:#cfe3d9;padding:18px 0}
+aside h1{font-size:16px;margin:0 20px 18px;color:#fff;display:flex;gap:8px;align-items:center}
+aside a{display:block;padding:10px 20px;color:#cfe3d9;text-decoration:none;font-size:14px}
+aside a.on{background:var(--green);color:#fff;font-weight:600}
+aside a:hover:not(.on){background:#264a3a}
+main{padding:22px 26px;min-width:0}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px}
+.top h2{margin:0;font-size:20px}
+.top small{color:var(--mut);margin-left:8px;font-weight:400}
+.btn{border:1px solid var(--line);background:#fff;padding:8px 14px;border-radius:6px;cursor:pointer;font:inherit}
+.btn:hover{border-color:var(--green)}
+.btn.p{background:var(--green);color:#fff;border-color:var(--green)}
+.btn.p:hover{background:var(--green-d)}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:12px 16px}
+.kpi b{display:block;font-size:22px;margin-top:4px}
+.kpi span{color:var(--mut);font-size:12px}
+.layout{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:16px;align-items:start}
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px}
+.tools{display:flex;gap:8px;padding:12px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.tools input,.tools select,.form input,.form select,.form textarea{font:inherit;padding:7px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;width:100%}
+.tools input{flex:1;min-width:160px;width:auto}
+.tools select{width:auto}
+table{width:100%;border-collapse:collapse}
+th{background:var(--head);text-align:left;padding:9px 12px;font-size:13px;white-space:nowrap}
+td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+tbody tr{cursor:pointer}
+tbody tr:hover{background:#f3f9f6}
+tbody tr.sel{background:var(--green-l)}
+.tag{display:inline-block;padding:2px 8px;border-radius:10px;font-size:12px;font-weight:600}
+.tA{background:#dff1e7;color:#1f6a46}.tB{background:#e0ebf7;color:#2a5f98}.tC{background:#fbefd6;color:#9a6200}
+.mut{color:var(--mut);font-size:12px}
+.bar{height:6px;background:#e6ebe8;border-radius:4px;overflow:hidden;margin-top:4px;min-width:70px}
+.bar i{display:block;height:100%;background:var(--green)}
+.bar i.w{background:var(--warn)}.bar i.d{background:var(--bad)}
+.detail{padding:16px}
+.detail h3{margin:0 0 2px;font-size:18px}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:14px 0}
+.tabs button{border:0;background:none;padding:8px 12px;cursor:pointer;font:inherit;color:var(--mut);border-bottom:2px solid transparent}
+.tabs button.on{color:var(--green-d);border-color:var(--green);font-weight:700}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px 16px}
+.grid2 div span{display:block;color:var(--mut);font-size:12px}
+.grid2 div b{font-weight:600}
+.addr{border:1px solid var(--line);border-radius:6px;padding:10px 12px;margin-bottom:8px;display:flex;justify-content:space-between;gap:10px}
+.addr .k{font-size:12px;padding:2px 8px;border-radius:4px;background:var(--green-l);color:var(--green-d);height:fit-content;white-space:nowrap}
+.addr .k.o{background:#e0ebf7;color:#2a5f98}.addr .k.f{background:#fbefd6;color:#9a6200}
+.pager{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 12px;flex-wrap:wrap}
+.pager .pn{display:flex;gap:4px}
+.pager button{border:1px solid var(--line);background:#fff;border-radius:5px;padding:4px 10px;cursor:pointer;font:inherit}
+.pager button.on{background:var(--green);color:#fff;border-color:var(--green)}
+.pager button:disabled{opacity:.4;cursor:default}
+.pager select{font:inherit;padding:3px 6px;border:1px solid var(--line);border-radius:5px}
+.empty{padding:50px;text-align:center;color:var(--mut)}
+.up{color:var(--bad)}.down{color:var(--green)}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:center;justify-content:center;padding:16px;z-index:9}
+.modal.on{display:flex}
+.box{background:#fff;border-radius:10px;width:640px;max-width:100%;max-height:92vh;overflow:auto}
+.box header{padding:14px 18px;border-bottom:1px solid var(--line);font-weight:700;font-size:16px}
+.form{padding:16px 18px;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form label{font-size:12px;color:var(--mut);display:block;margin-bottom:3px}
+.form .full{grid-column:1/-1}
+.box footer{padding:12px 18px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:8px}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1c3a2e;color:#fff;padding:10px 18px;border-radius:6px;opacity:0;transition:.25s;pointer-events:none}
+.toast.on{opacity:1}
+@media(max-width:1100px){.layout{grid-template-columns:1fr}.kpis{grid-template-columns:1fr 1fr}}
+@media(max-width:760px){.app{grid-template-columns:1fr}aside{display:none}.form{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside>
+  <h1>🌱 有機肥料進銷存系統</h1>
+  <a class="on">1. 客戶管理</a>
+  <a>2. 原料採購與驗收入庫</a>
+  <a>3. 配方 BOM 與工單投料</a>
+  <a>4. 分裝與成品批號</a>
+  <a>5. 銷售接單與車趟排程</a>
+  <a>6. 銷貨出庫與扣減</a>
+  <a>7. 月結對帳與法規追溯</a>
+</aside>
+<main>
+  <div class="top">
+    <h2>客戶管理<small>農藥行 / 農資行</small></h2>
+    <div><button class="btn" onclick="exportCsv()">匯出 CSV</button> <button class="btn p" onclick="openForm()">＋ 新增客戶</button></div>
+  </div>
+  <div class="kpis" id="kpis"></div>
+  <div class="layout">
+    <div class="card">
+      <div class="tools">
+        <input id="q" placeholder="搜尋 客戶編號 / 統編 / 店名 / 聯絡人 / 電話" oninput="render()">
+        <select id="ft" onchange="render()"><option value="">全部價格等級</option><option>A</option><option>B</option><option>C</option></select>
+        <select id="fd" onchange="render()"><option value="">全部帳期</option><option value="0">現金</option><option value="30">月結 30 天</option><option value="60">月結 60 天</option></select>
+      </div>
+      <div style="overflow:auto"><table>
+        <thead><tr><th>客戶編號</th><th>店名 / 聯絡人</th><th>電話</th><th>價格等級</th><th>月結</th><th>信用額度使用</th></tr></thead>
+        <tbody id="tb"></tbody>
+      </table></div>
+      <div class="pager" id="pg"></div>
+    </div>
+    <div class="card" id="dt"></div>
+  </div>
+</main>
+</div>
+
+<div class="modal" id="md"><div class="box">
+  <header id="mt">新增客戶</header>
+  <div class="form">
+    <div><label>客戶編號</label><input id="f_id" placeholder="自動產生" disabled></div>
+    <div><label>統一編號</label><input id="f_tax" maxlength="8"></div>
+    <div><label>店名 *</label><input id="f_name"></div>
+    <div><label>聯絡人</label><input id="f_ct"></div>
+    <div><label>電話</label><input id="f_tel"></div>
+    <div><label>客戶類型</label><select id="f_type"><option>農藥行</option><option>農資行</option></select></div>
+    <div><label>價格等級</label><select id="f_tier"><option>A</option><option>B</option><option>C</option></select></div>
+    <div><label>月結天數</label><select id="f_days"><option value="0">現金</option><option value="30">30 天</option><option value="60">60 天</option></select></div>
+    <div><label>信用額度 (NT$)</label><input id="f_lim" type="number" value="100000"></div>
+    <div><label>主要送貨地址</label><input id="f_addr"></div>
+    <div class="full"><label>備註</label><textarea id="f_note" rows="2"></textarea></div>
+  </div>
+  <footer><button class="btn" onclick="closeForm()">取消</button><button class="btn p" onclick="save()">儲存</button></footer>
+</div></div>
+<div class="toast" id="ts"></div>
+
+<script>
+const tierName={A:'A 級（大盤批發）',B:'B 級（一般經銷）',C:'C 級（零售農藥行）'};
+let data=[
+ {id:'C0001',tax:'12345678',name:'豐收農藥行',ct:'陳大明',tel:'05-5321188',type:'農藥行',tier:'A',days:60,lim:500000,used:312000,note:'旺季（3-6 月）可臨時調高額度',
+  addrs:[{k:'本舖',a:'雲林縣斗六市中山路 123 號'},{k:'外庫',a:'雲林縣斗六市工業區 5 路 8 號倉庫'},{k:'代送農戶',a:'雲林縣古坑鄉華山村 12 號（王老闆）'}],
+  prices:[['有機質肥料 20kg/袋',185,172,'2026-10-12'],['腐植酸有機肥 25kg/袋',420,405,'2026-09-03'],['骨粉有機肥 25kg/袋',390,390,'2026-08-21']]},
+ {id:'C0002',tax:'23456789',name:'嘉南農資供應站',ct:'林淑芬',tel:'06-2987766',type:'農資行',tier:'A',days:60,lim:800000,used:655000,note:'下游農藥行 14 家',
+  addrs:[{k:'本舖',a:'台南市新營區民權路 88 號'},{k:'外庫',a:'台南市柳營區物流園區 B 棟'}],
+  prices:[['有機質肥料 20kg/袋',185,165,'2026-10-30'],['微量元素複合肥 20kg/袋',320,298,'2026-10-02']]},
+ {id:'C0003',tax:'34567890',name:'青山農藥行',ct:'黃志豪',tel:'049-2741234',type:'農藥行',tier:'B',days:30,lim:200000,used:188000,note:'接近額度上限，出貨前需確認',
+  addrs:[{k:'本舖',a:'南投縣草屯鎮中正路 45 號'},{k:'代送農戶',a:'南投縣名間鄉濁水村 3 鄰 21 號'}],
+  prices:[['有機質肥料 20kg/袋',185,182,'2026-09-18'],['骨粉有機肥 25kg/袋',390,382,'2026-10-25']]},
+ {id:'C0004',tax:'45678901',name:'東勢果樹資材行',ct:'張美玲',tel:'04-25878899',type:'農藥行',tier:'B',days:30,lim:150000,used:42000,note:'',
+  addrs:[{k:'本舖',a:'台中市東勢區中山路 210 號'}],
+  prices:[['微量元素複合肥 20kg/袋',320,315,'2026-10-08']]},
+ {id:'C0005',tax:'56789012',name:'屏東農友農藥行',ct:'李國雄',tel:'08-7326655',type:'農藥行',tier:'C',days:0,lim:50000,used:0,note:'現金客戶',
+  addrs:[{k:'本舖',a:'屏東縣屏東市民生路 66 號'},{k:'代送農戶',a:'屏東縣內埔鄉龍潭村 9 號'}],
+  prices:[['有機質肥料 20kg/袋',185,185,'2026-07-14']]},
+ {id:'C0006',tax:'67890123',name:'花蓮好農資材',ct:'吳佳穎',tel:'03-8331212',type:'農資行',tier:'B',days:60,lim:400000,used:120000,note:'東部區域經銷',
+  addrs:[{k:'本舖',a:'花蓮縣花蓮市中華路 301 號'},{k:'外庫',a:'花蓮縣吉安鄉建國路 77 號'}],
+  prices:[['腐植酸有機肥 25kg/袋',420,410,'2026-10-19']]},
+ {id:'C0007',tax:'78901234',name:'彰化田園農藥行',ct:'許文彬',tel:'04-8762345',type:'農藥行',tier:'C',days:30,lim:80000,used:76500,note:'帳款逾期 1 次',
+  addrs:[{k:'本舖',a:'彰化縣溪湖鎮彰水路 12 號'}],
+  prices:[['骨粉有機肥 25kg/袋',390,390,'2026-06-30']]},
+];
+/* 補充範例客戶（示意資料） */
+(()=>{
+  const places=[['雲林縣虎尾鎮','05'],['嘉義縣民雄鄉','05'],['台南市善化區','06'],['高雄市旗山區','07'],['屏東縣潮州鎮','08'],['台東縣關山鎮','089'],['宜蘭縣羅東鎮','03'],['苗栗縣公館鄉','037'],['新竹縣關西鎮','03'],['桃園市新屋區','03'],['南投縣埔里鎮','049'],['彰化縣田中鎮','04'],['雲林縣西螺鎮','05'],['嘉義縣水上鄉','05'],['台南市麻豆區','06'],['花蓮縣玉里鎮','03']];
+  const sfx=['農藥行','農資行','資材行','農業資材','種苗肥料行','農友商行'];
+  const cts=['王建國','蔡雅婷','劉俊宏','楊怡君','鄭明哲','謝佩珊','洪志偉','郭雅雯','曾國華','蕭佳琪','賴冠宇','周淑惠','葉信宏','江美珠','施宗翰','趙雅琪'];
+  const tiers=['C','B','B','A','C','B','C','A','B','C','B','B','C','A','B','C'], days=[0,30,30,60,0,30,30,60,30,0,30,60,30,60,30,0];
+  const prods=['有機質肥料 20kg/袋','腐植酸有機肥 25kg/袋','骨粉有機肥 25kg/袋','微量元素複合肥 20kg/袋'], base=[185,420,390,320];
+  places.forEach((p,i)=>{
+    const t=tiers[i], lim=t==='A'?600000:t==='B'?200000:60000, d=days[i];
+    const used=d?Math.round(lim*[.15,.35,.55,.75,.92][i%5]/1000)*1000:0, disc=t==='A'?-16:t==='B'?-6:0;
+    data.push({id:'C'+String(8+i).padStart(4,'0'),tax:String(80000000+i*1234567).slice(0,8),name:p[0].replace(/[縣市].*/,'').slice(0,0)+p[0].slice(-3,-1)+sfx[i%sfx.length],ct:cts[i],tel:p[1]+'-'+String(2300000+i*41357).slice(0,7),
+      type:i%3===1?'農資行':'農藥行',tier:t,days:d,lim:d?lim:50000,used,note:'',
+      addrs:[{k:'本舖',a:p[0]+'中正路 '+(10+i*7)+' 號'}].concat(i%3===0?[{k:'代送農戶',a:p[0]+'農會路 '+(3+i)+' 號'}]:[]),
+      prices:[[prods[i%4],base[i%4],base[i%4]+disc,'2026-10-'+String(5+i).padStart(2,'0')]]});
+  });
+})();
+let page=1, pageSize=8, lastKey='';
+const $=id=>document.getElementById(id);
+let sel=data[0].id, tab='info', editing=null;
+const fmt=n=>'NT$ '+n.toLocaleString();
+const pct=c=>Math.round(c.used/c.lim*100);
+const barCls=p=>p>=90?'d':p>=70?'w':'';
+const dayTxt=d=>d?`月結 ${d} 天`:'現金';
+
+function render(){
+  const q=$('q').value.trim().toLowerCase(), ft=$('ft').value, fd=$('fd').value;
+  const all=data.filter(c=>(!ft||c.tier===ft)&&(fd===''||String(c.days)===fd)&&(!q||[c.id,c.tax,c.name,c.ct,c.tel].join(' ').toLowerCase().includes(q)));
+  const key=q+'|'+ft+'|'+fd; if(key!==lastKey){page=1;lastKey=key}
+  const pages=Math.max(1,Math.ceil(all.length/pageSize)); if(page>pages)page=pages;
+  const rows=all.slice((page-1)*pageSize,page*pageSize);
+  $('tb').innerHTML=rows.map(c=>{const p=pct(c);return `<tr class="${c.id===sel?'sel':''}" onclick="pick('${c.id}')">
+    <td>${c.id}</td><td><b>${c.name}</b><div class="mut">${c.ct}・${c.type}</div></td><td>${c.tel}</td>
+    <td><span class="tag t${c.tier}">${c.tier} 級</span></td><td>${dayTxt(c.days)}</td>
+    <td>${c.lim?`${p}%<div class="bar"><i class="${barCls(p)}" style="width:${Math.min(p,100)}%"></i></div>`:'-'}</td></tr>`}).join('')||`<tr><td colspan="6" class="empty">查無符合的客戶</td></tr>`;
+  const from=all.length?(page-1)*pageSize+1:0, to=Math.min(page*pageSize,all.length);
+  let nums='';for(let i=1;i<=pages;i++)nums+=`<button class="${i===page?'on':''}" onclick="goPage(${i})">${i}</button>`;
+  $('pg').innerHTML=`<span class="mut">共 ${all.length} 筆，顯示 ${from}–${to}</span>
+    <span class="pn"><button ${page<=1?'disabled':''} onclick="goPage(${page-1})">‹ 上一頁</button>${nums}<button ${page>=pages?'disabled':''} onclick="goPage(${page+1})">下一頁 ›</button></span>
+    <span class="mut">每頁 <select onchange="pageSize=+this.value;page=1;render()">${[5,8,10,20].map(n=>`<option ${n===pageSize?'selected':''}>${n}</option>`).join('')}</select> 筆</span>`;
+  const tot=data.reduce((s,c)=>s+c.used,0);
+  $('kpis').innerHTML=`
+   <div class="kpi"><span>客戶總數</span><b>${data.length}</b></div>
+   <div class="kpi"><span>月結客戶</span><b>${data.filter(c=>c.days).length}</b></div>
+   <div class="kpi"><span>應收未收總額</span><b>${fmt(tot)}</b></div>
+   <div class="kpi"><span>額度使用 ≥ 90%</span><b style="color:var(--bad)">${data.filter(c=>pct(c)>=90).length}</b></div>`;
+  detail();
+}
+function pick(id){sel=id;render()}
+function goPage(n){page=n;render()}
+function setTab(t){tab=t;detail()}
+function detail(){
+  const c=data.find(x=>x.id===sel); if(!c){$('dt').innerHTML='<div class="empty">請從左側選擇客戶</div>';return}
+  const p=pct(c);
+  let body='';
+  if(tab==='info') body=`<div class="grid2">
+    <div><span>客戶編號</span><b>${c.id}</b></div><div><span>統一編號</span><b>${c.tax||'-'}</b></div>
+    <div><span>聯絡人</span><b>${c.ct||'-'}</b></div><div><span>電話</span><b>${c.tel||'-'}</b></div>
+    <div><span>客戶類型</span><b>${c.type}</b></div><div><span>價格等級</span><b>${tierName[c.tier]}</b></div>
+    <div class="full" style="grid-column:1/-1"><span>備註</span><b>${c.note||'—'}</b></div></div>`;
+  if(tab==='addr') body=c.addrs.map(a=>`<div class="addr"><div><b>${a.a}</b></div><span class="k ${a.k==='外庫'?'o':a.k==='代送農戶'?'f':''}">${a.k}</span></div>`).join('')
+    +`<button class="btn" onclick="addAddr()">＋ 新增送貨地址</button><div class="mut" style="margin-top:8px">開立銷貨單時可選擇「本舖 / 外庫 / 代送農戶」作為出貨地點。</div>`;
+  if(tab==='price') body=`<div class="mut" style="margin-bottom:8px">目前價格等級：<span class="tag t${c.tier}">${c.tier} 級</span>　批發價依等級自動帶入，亦可設定客戶專屬價。</div>
+    <table><thead><tr><th>品項</th><th>牌價(元/袋)</th><th>專屬價(元/袋)</th><th>差異</th><th>最近成交</th></tr></thead><tbody>`+
+    c.prices.map(r=>{const d=r[2]-r[1];return `<tr style="cursor:default"><td>${r[0]}</td><td>${r[1]}</td><td><b>${r[2]}</b></td><td class="${d<0?'down':''}">${d?d:'—'}</td><td class="mut">${r[3]}</td></tr>`}).join('')+`</tbody></table>`;
+  if(tab==='stmt'){
+    const rows=c.prices.map((r,i)=>{const bags=(i+2)*40;return [r[3],'B'+r[3].replace(/-/g,'')+'-0'+(i+1),r[0],bags,bags*r[2]]});
+    const sum=rows.reduce((s,r)=>s+r[4],0);
+    body=`<div class="mut" style="margin-bottom:8px">月結請款對帳單（依當月出貨單自動彙總，含出貨批號供追溯）</div>
+    <table><thead><tr><th>出貨日</th><th>出貨批號</th><th>品項</th><th>包數</th><th>金額</th></tr></thead><tbody>`+
+    (rows.map(r=>`<tr style="cursor:default"><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4].toLocaleString()}</td></tr>`).join('')||'<tr><td colspan="5" class="empty">本月無出貨</td></tr>')+
+    `</tbody></table><div style="text-align:right;margin-top:10px">應收合計：<b>${fmt(sum)}</b></div>
+    <div style="margin-top:10px"><button class="btn" onclick="toast('已產生對帳單（示意）')">產出對帳單</button></div>`;
+  }
+  if(tab==='credit') body=`<div class="grid2">
+    <div><span>帳期條件</span><b>${dayTxt(c.days)}</b></div><div><span>信用額度</span><b>${fmt(c.lim)}</b></div>
+    <div><span>已使用額度</span><b>${fmt(c.used)}</b></div><div><span>可用額度</span><b>${fmt(Math.max(c.lim-c.used,0))}</b></div></div>
+    <div style="margin-top:14px">額度使用率 ${p}%<div class="bar" style="height:10px"><i class="${barCls(p)}" style="width:${Math.min(p,100)}%"></i></div></div>
+    ${p>=90?`<div style="margin-top:12px;padding:10px;background:#fdeceb;color:var(--bad);border-radius:6px">⚠ 額度即將用罄，開立新銷貨單時將需主管核准。</div>`:''}
+    <div class="mut" style="margin-top:12px">結帳日：每月底　｜　付款期限：結帳後 ${c.days} 天</div>`;
+  $('dt').innerHTML=`<div class="detail"><div style="display:flex;justify-content:space-between;align-items:start">
+    <div><h3>${c.name}</h3><div class="mut">${c.id}・${c.type}</div></div>
+    <div><button class="btn" onclick="openForm('${c.id}')">編輯</button> <button class="btn" onclick="del('${c.id}')" style="color:var(--bad)">刪除</button></div></div>
+    <div class="tabs">${[['info','基本資料'],['addr','送貨地址'],['price','價格等級 / 專屬價'],['credit','帳期與額度'],['stmt','月結對帳']].map(t=>`<button class="${tab===t[0]?'on':''}" onclick="setTab('${t[0]}')">${t[1]}</button>`).join('')}</div>${body}</div>`;
+}
+function openForm(id){
+  editing=id||null; const c=id?data.find(x=>x.id===id):null;
+  $('mt').textContent=c?'編輯客戶':'新增客戶';
+  $('f_id').value=c?c.id:'';
+  $('f_tax').value=c?c.tax:'';$('f_name').value=c?c.name:'';$('f_ct').value=c?c.ct:'';$('f_tel').value=c?c.tel:'';
+  $('f_type').value=c?c.type:'農藥行';$('f_tier').value=c?c.tier:'B';$('f_days').value=c?c.days:30;
+  $('f_lim').value=c?c.lim:100000;$('f_addr').value=c?c.addrs[0].a:'';$('f_note').value=c?c.note:'';
+  $('md').classList.add('on');
+}
+function closeForm(){$('md').classList.remove('on')}
+function save(){
+  const name=$('f_name').value.trim(); if(!name){toast('請輸入店名');return}
+  const o={tax:$('f_tax').value,name,ct:$('f_ct').value,tel:$('f_tel').value,type:$('f_type').value,tier:$('f_tier').value,days:+$('f_days').value,lim:+$('f_lim').value,note:$('f_note').value};
+  if(editing){const c=data.find(x=>x.id===editing);Object.assign(c,o);if($('f_addr').value)c.addrs[0]={k:'本舖',a:$('f_addr').value};toast('已更新客戶資料')}
+  else{const id='C'+String(data.length+1).padStart(4,'0');data.push({...o,id,used:0,addrs:[{k:'本舖',a:$('f_addr').value||'（未填）'}],prices:[]});sel=id;toast('已新增客戶 '+id)}
+  closeForm();render();
+}
+function del(id){if(confirm('確定刪除此客戶？')){data=data.filter(c=>c.id!==id);sel=data[0]?.id;render();toast('已刪除')}}
+function addAddr(){const a=prompt('請輸入送貨地址');if(!a)return;const k=prompt('類型（本舖 / 外庫 / 代送農戶）','代送農戶')||'代送農戶';data.find(c=>c.id===sel).addrs.push({k,a});detail()}
+function exportCsv(){
+  const h=['客戶編號','統一編號','店名','聯絡人','電話','送貨地址','價格等級','月結天數','信用額度','備註'];
+  const r=data.map(c=>[c.id,c.tax,c.name,c.ct,c.tel,c.addrs.map(a=>a.k+':'+a.a).join(' | '),c.tier,c.days,c.lim,c.note].map(v=>`"${v}"`).join(','));
+  const b=new Blob(['﻿'+[h.join(','),...r].join('\n')],{type:'text/csv'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='客戶清單.csv';a.click();
+}
+function toast(m){const t=$('ts');t.textContent=m;t.classList.add('on');setTimeout(()=>t.classList.remove('on'),1800)}
+render();
+</script>
+</body>
+</html>
