@@ -16,6 +16,12 @@ body{margin:0;font-family:"Microsoft JhengHei","PingFang TC",system-ui,sans-seri
 aside{background:#1c3a2e;color:#cfe3d9;padding:18px 0}
 aside h1{font-size:16px;margin:0 20px 18px;color:#fff;display:flex;gap:8px;align-items:center}
 aside a{display:block;padding:10px 20px;color:#cfe3d9;text-decoration:none;font-size:14px}
+aside a{cursor:pointer}
+aside .mgrp{margin:14px 20px 4px;font-size:12px;color:#7fa593}
+.userbar{display:flex;justify-content:flex-end;align-items:center;gap:10px;margin:-6px 0 12px;min-height:22px}
+.userbar a{color:var(--green-d);cursor:pointer}
+#pw{z-index:30}
+.toast{z-index:40}
 aside a.on{background:var(--green);color:#fff;font-weight:600}
 aside a:hover:not(.on){background:#264a3a}
 main{padding:22px 26px;min-width:0}
@@ -65,6 +71,13 @@ tbody tr.sel{background:var(--green-l)}
 .pager button.on{background:var(--green);color:#fff;border-color:var(--green)}
 .pager button:disabled{opacity:.4;cursor:default}
 .pager select{font:inherit;padding:3px 6px;border:1px solid var(--line);border-radius:5px}
+.login{position:fixed;inset:0;background:linear-gradient(135deg,#1c3a2e,#2f7d5b);display:flex;align-items:center;justify-content:center;padding:16px;z-index:20}
+.login.off{display:none}
+.lbox{background:#fff;border-radius:12px;padding:28px 28px 22px;width:340px;max-width:100%;text-align:center}
+.lbox h2{margin:6px 0 2px;font-size:20px}
+.lbox label{display:block;text-align:left;font-size:12px;color:var(--mut);margin:10px 0 3px}
+.lbox input{font:inherit;padding:9px 10px;border:1px solid var(--line);border-radius:6px;width:100%}
+.lerr{color:var(--bad);font-size:12px;min-height:16px;margin-top:6px;text-align:left}
 .empty{padding:50px;text-align:center;color:var(--mut)}
 .up{color:var(--bad)}.down{color:var(--green)}
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:center;justify-content:center;padding:16px;z-index:9}
@@ -86,17 +99,17 @@ tbody tr.sel{background:var(--green-l)}
 <aside>
   <h1>🌱 有機肥料進銷存系統</h1>
   <a class="on">1. 客戶管理</a>
-  <a>2. 原料採購與驗收入庫</a>
-  <a>3. 配方 BOM 與工單投料</a>
-  <a>4. 分裝與成品批號</a>
-  <a>5. 銷售接單與車趟排程</a>
-  <a>6. 銷貨出庫與扣減</a>
-  <a>7. 月結對帳與法規追溯</a>
+  <div class="mgrp">資料</div>
+  <a onclick="openImport()">⬆ 匯入</a>
+  <a onclick="exportCsv()">⬇ 匯出 CSV</a>
+  <div class="mgrp">帳號</div>
+  <a onclick="openPwd()">🔑 修改密碼</a>
 </aside>
 <main>
+  <div class="userbar" id="ub"></div>
   <div class="top">
     <h2>客戶管理<small>農藥行 / 農資行</small></h2>
-    <div><button class="btn" onclick="exportCsv()">匯出 CSV</button> <button class="btn p" onclick="openForm()">＋ 新增客戶</button></div>
+    <div><button class="btn p" onclick="openForm()">＋ 新增客戶</button></div>
   </div>
   <div class="kpis" id="kpis"></div>
   <div class="layout">
@@ -133,6 +146,39 @@ tbody tr.sel{background:var(--green-l)}
     <div class="full"><label>備註</label><textarea id="f_note" rows="2"></textarea></div>
   </div>
   <footer><button class="btn" onclick="closeForm()">取消</button><button class="btn p" onclick="save()">儲存</button></footer>
+</div></div>
+<div class="modal" id="im"><div class="box" style="width:480px">
+  <header>匯入客戶資料</header>
+  <div style="padding:16px 18px">
+    <div class="mut" style="margin-bottom:10px">支援 Excel（.xlsx）或 CSV，欄位：客戶編號、統一編號、店名、聯絡人、電話、送貨地址、價格等級、月結天數、信用額度、備註。</div>
+    <input type="file" id="im_file" accept=".csv,.xlsx,.xls" style="width:100%;padding:18px;border:2px dashed var(--line);border-radius:8px">
+    <div style="margin-top:10px"><a href="#" onclick="toast('範本下載（示意）');return false" style="color:var(--green-d)">下載匯入範本</a></div>
+  </div>
+  <footer><button class="btn" onclick="closeImport()">取消</button><button class="btn p" onclick="doImport()">開始匯入</button></footer>
+</div></div>
+<div class="login" id="lg">
+  <form class="lbox" onsubmit="return doLogin(event)">
+    <div style="font-size:34px">🌱</div>
+    <h2>有機肥料進銷存系統</h2>
+    <div class="mut" style="margin-bottom:14px">請登入以繼續</div>
+    <label>帳號</label><input id="lg_u" autocomplete="username" autofocus>
+    <label>密碼</label><input id="lg_p" type="password" autocomplete="current-password" >
+    <div class="lerr" id="lg_e"></div>
+    <button class="btn p" style="width:100%;padding:10px;margin-top:6px">登入</button>
+    <div style="margin-top:12px;text-align:center"><a href="#" onclick="openPwd();return false" style="color:var(--green-d)">修改密碼</a></div>
+    <div class="mut" id="lg_hint" style="margin-top:8px;text-align:center">示範帳號：admin ／ 密碼：1234</div>
+  </form>
+</div>
+<div class="modal" id="pw"><div class="box" style="width:400px">
+  <header>修改密碼</header>
+  <div class="form" style="grid-template-columns:1fr">
+    <div><label>帳號</label><input id="pw_u" autocomplete="username"></div>
+    <div><label>目前密碼</label><input id="pw_o" type="password" autocomplete="current-password"></div>
+    <div><label>新密碼（至少 4 碼）</label><input id="pw_n" type="password" autocomplete="new-password"></div>
+    <div><label>確認新密碼</label><input id="pw_c" type="password" autocomplete="new-password"></div>
+    <div class="lerr" id="pw_e"></div>
+  </div>
+  <footer><button class="btn" onclick="closePwd()">取消</button><button class="btn p" onclick="savePwd()">儲存</button></footer>
 </div></div>
 <div class="toast" id="ts"></div>
 
@@ -271,6 +317,42 @@ function exportCsv(){
   const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='客戶清單.csv';a.click();
 }
 function toast(m){const t=$('ts');t.textContent=m;t.classList.add('on');setTimeout(()=>t.classList.remove('on'),1800)}
+function openImport(){$('im_file').value='';$('im').classList.add('on')}
+function closeImport(){$('im').classList.remove('on')}
+function doImport(){
+  if(!$('im_file').files.length){toast('請先選擇檔案');return}
+  closeImport();toast('匯入功能開發中（示意）');
+}
+/* 登入（僅示範，帳密寫在前端，正式版需改為後端驗證） */
+const store={get:k=>{try{return sessionStorage.getItem(k)}catch(e){return null}},set:(k,v)=>{try{sessionStorage.setItem(k,v)}catch(e){}},del:k=>{try{sessionStorage.removeItem(k)}catch(e){}}};
+const pwdStore={get:()=>{try{return localStorage.getItem('demo_pwd')||'1234'}catch(e){return '1234'}},set:v=>{try{localStorage.setItem('demo_pwd',v)}catch(e){}}};
+function showUser(){
+  const u=store.get('user'); $('lg').classList.toggle('off',!!u);
+  $('ub').innerHTML=u?`<span class="mut">👤 ${u}</span><a onclick="logout()">登出</a>`:'';
+  $('lg_hint').style.display=pwdStore.get()==='1234'?'':'none';
+}
+function doLogin(e){
+  e.preventDefault();
+  if($('lg_u').value.trim()==='admin'&&$('lg_p').value===pwdStore.get()){store.set('user','admin');$('lg_e').textContent='';$('lg_p').value='';showUser()}
+  else $('lg_e').textContent='帳號或密碼錯誤';
+  return false;
+}
+function openPwd(){
+  ['pw_o','pw_n','pw_c'].forEach(i=>$(i).value='');$('pw_e').textContent='';
+  $('pw_u').value=store.get('user')||$('lg_u').value||'';
+  $('pw').classList.add('on');
+}
+function closePwd(){$('pw').classList.remove('on')}
+function savePwd(){
+  const e=m=>{$('pw_e').textContent=m;return false};
+  if($('pw_u').value.trim()!=='admin')return e('查無此帳號');
+  if($('pw_o').value!==pwdStore.get())return e('目前密碼錯誤');
+  if($('pw_n').value.length<4)return e('新密碼至少 4 碼');
+  if($('pw_n').value!==$('pw_c').value)return e('兩次輸入的新密碼不一致');
+  pwdStore.set($('pw_n').value);closePwd();showUser();toast('密碼已更新');
+}
+function logout(){store.del('user');showUser()}
+showUser();
 render();
 </script>
 </body>
